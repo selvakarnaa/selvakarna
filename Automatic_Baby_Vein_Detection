@@ -1,0 +1,71 @@
+###################################################################
+In any surgery, the first important phase is an insertion of an intravenous (IV) catheter. 
+The major problem face by the physicians is difficulty in accessing vein for IV drug delivery 
+or taking blood samples for test. In case of children, adults, critical care patients etc.
+It is very difficult task. Unnecessary puncturing of veins occurs due to poor visibility. 
+Wrong puncturing may leads many problems such as bruises or permanently damage the vein.
+To overcome from these problems there is a need of vein detection system. The paper presents 
+an approach for live baby Vein detection System. In the proposed work live camera is used to
+identify the veins. The preprocessing is done to enhance the vein image using CLAHE.
+
+
+##################################################################
+clc
+clear all;
+close all;
+%% TO OPEN CAMERA FOR LIVE VEIN DETECTION 
+VIDEO_OPN = videoinput('winvideo',1);
+set(VIDEO_OPN,'TriggerRepeat',Inf);
+VIDEO_OPN.FrameGrabInterval = 5;
+%% VIDEO SOURCE SETS
+vid_src = getselectedsource(VIDEO_OPN);
+set(vid_src,'Tag','motion detection setup');
+%% START ACQURIRING FRAMES
+start(VIDEO_OPN)
+% CALCULATE DIFFERENCE IMAGES
+while(VIDEO_OPN.FramesAcquired<=1000) % 
+  FRAM_DETEC = getdata(VIDEO_OPN,2);  
+    FRAM_DIFFERENCE = imabsdiff(  FRAM_DETEC (:,:,:,1),  FRAM_DETEC (:,:,:,2)); 
+    %%
+    COLOR_TO_GRAY=rgb2gray(FRAM_DIFFERENCE); 
+   
+GRAY_FRAM=  COLOR_TO_GRAY; %%% 
+BINARY_FRAME_THRESHOLD= graythresh(GRAY_FRAM); %%% 
+BINARY_IMG = im2bw(GRAY_FRAM,BINARY_FRAME_THRESHOLD);
+%%
+VEIN_INPUT_DATAS=  COLOR_TO_GRAY;
+IMG_DOUBLE = im2double(VEIN_INPUT_DATAS); 
+IMG_DOUBLE = imresize(IMG_DOUBLE,0.5);             
+MOSK_IMG = ones(size(IMG_DOUBLE)); 
+ 
+MOSK_IMG=vein_featu(IMG_DOUBLE, 4, 40)
+%% Extract veins using maximum curvature method
+VEIN_SIGMA = 3;
+VEIN_OUT_IMG=vein_dir_featu(IMG_DOUBLE, MOSK_IMG, VEIN_SIGMA) 
+%% BINARY PROCESSING
+FILTERD_VEIN_IMG = median(VEIN_OUT_IMG(VEIN_OUT_IMG>0));
+VEIN_MAX_BIN =VEIN_OUT_IMG > FILTERD_VEIN_IMG; 
+%% last 
+MAXIMUM_ITERATION = 30; r=1; W=17; 
+VEIN_FEATURES=vein_up_dow_l_r_dir(IMG_DOUBLE , MOSK_IMG, MAXIMUM_ITERATION, r, W) ;
+% subplot(212)
+% imagesc(vein_all_feat);
+%%
+% subplot(211)
+% imshow(vein_in);%% vein_in %%vein_all_feat
+subplot(211);
+imshow(FRAM_DIFFERENCE );
+    hold on
+    subplot(212);
+%     a=[789.5 479.5 306 264];
+%     b=imcrop(la_imagen,a);
+%     b=rgb2gray(a);
+points = detectSURFFeatures(GRAY_FRAM);
+imshow( FRAM_DIFFERENCE); hold on; %%%%   color_gry:::::gray_out
+plot(points.selectStrongest(10));
+% hold on
+colormap gray
+drawnow;
+hold off;
+end
+stop(VIDEO_OPN)
