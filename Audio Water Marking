@@ -1,0 +1,216 @@
+clc
+clear all;
+close all;
+[y,Fs]=wavread('ultimat.wav');
+YY=y;
+AUDIO_PLY_PLOT(y,Fs)
+xlabel('Magnitude');
+ylabel('Frequency');
+title('Original Audio Signal');
+%% FILTER PROCESS
+FILT_SIGNAL = filter([1 -1 1], 1, y);
+%% EXTRACT THE CHANNELS FROM AUDIO SIGNALS
+y=FILT_SIGNAL;
+CHANNEL_1=(y(:,1));
+CHANNEL_2=(y(:,2));
+%% SEGMENT THE AUDIO DATA
+% EXTRACT SAMPLES VIA EMD
+Ts=4000;
+ ADI_COS=y(1:10000);
+SEG=ADI_COS;
+figure,plot(SEG,'c');
+title('Segment Audio Signal')
+INT_MOD_FUN = HIL_SPECTR_ANALY_EMD(ADI_COS)
+%% ADD WATER MARK DATA 
+CELL_LENGTH=length(INT_MOD_FUN);
+% FIND FREQUENCY LEVEL OF EMD DATA'S
+ INC_MOD_FUN= HIL_SPECTR_ANALY_EMD(ADI_COS)
+%% TO FIND EXTREMA AND MINIMA POSITION 
+NN=INC_MOD_FUN{5};
+q = quantizer([4,3]);
+y1 = num2bin(q,SEG)
+%% FILTERING PROCESS 
+% 
+DECI_FACT=1;
+j=real(abs(INC_MOD_FUN{1}));
+y=AUDIO_FILTER(DECI_FACT,j);
+soundsc(y,Fs)
+%% TO FIND EXTREMA ELEMENT POSITION 
+%%
+%% RAM SIGNAL
+N = size(y,1);
+df = Fs / N;
+w = (-(N/2):(N/2)-1)*df;
+y = fft(y(:,1), N) / N; %//For normalizing, but not needed for our analysis
+y2 = fftshift(y);
+y3=ifftshift(y2);
+% soundsc(y1,Fs)
+%% 
+%% DISCREATE TIME ANALYTIC USING HILBERT TRANSFORM
+% 17 CELLS ARE ANALYTIC BELLOW
+for k = 1:length(INT_MOD_FUN)
+   AUDIO_DATA(k) = sum(INT_MOD_FUN{k}.*INT_MOD_FUN{k});
+   PHASE_ANGLE   = hilbert(INT_MOD_FUN{k});
+ 
+end
+for k = 1:length(INT_MOD_FUN)
+ 
+   PHASE_ANGLE   = angle(INT_MOD_FUN{k});
+   DIFF{k} = diff(PHASE_ANGLE)/Ts/(2*pi);
+end
+[u,v] = sort(-AUDIO_DATA);
+AUDIO_DATA     = 1-AUDIO_DATA/max(AUDIO_DATA);
+%% IMF FUNCTION PLOTTING PERFORMANCE
+figure,plot(INT_MOD_FUN{1})
+xlabel('Tim')
+ylabel('Amplitude')
+title('Intrinsic Mode Functions1')
+grid on
+h = gcf; 
+set(h,'Name','Intrinsic Mode Functions    1');
+%% 
+figure,plot(INT_MOD_FUN{1},'g')
+xlabel('Tim')
+ylabel('Amplitude')
+title('Intrinsic Mode Functions2')
+grid on
+h = gcf; 
+set(h,'Name','Intrinsic Mode Functions    2');
+%% 
+figure,plot(INT_MOD_FUN{3},'m')
+xlabel('Tim')
+ylabel('Amplitude')
+title('Intrinsic Mode Functions 3')
+grid on
+h = gcf; 
+set(h,'Name','Intrinsic Mode Functions    3');
+%% 
+figure,plot(INT_MOD_FUN{4},'k')
+xlabel('Tim')
+ylabel('Amplitude')
+title('Intrinsic Mode Functions 4')
+grid on
+h = gcf; 
+set(h,'Name','Intrinsic Mode Functions    1');
+%% 
+figure,plot(INT_MOD_FUN{5},'c')
+xlabel('Tim')
+ylabel('Amplitude')
+title('Intrinsic Mode Functions1')
+grid on
+h = gcf; 
+set(h,'Name','Intrinsic Mode Functions    5');
+%% 
+figure,plot(INT_MOD_FUN{6},'m')
+xlabel('Tim')
+ylabel('Amplitude')
+title('Intrinsic Mode Functions 6')
+grid on
+h = gcf; 
+set(h,'Name','Intrinsic Mode Functions    6');
+%% 
+figure,plot(INT_MOD_FUN{7},'c')
+xlabel('Tim')
+ylabel('Amplitude')
+title('Intrinsic Mode Functions  7')
+grid on
+h = gcf; 
+set(h,'Name','Intrinsic Mode Functions    7');
+%% 
+figure,plot(INT_MOD_FUN{8},'k')
+xlabel('Tim')
+ylabel('Amplitude')
+title('Intrinsic Mode Functions  8')
+grid on
+h = gcf; 
+set(h,'Name','Intrinsic Mode Functions    8');
+%% 
+figure,plot(INT_MOD_FUN{9},'b')
+xlabel('Tim')
+ylabel('Amplitude')
+title('Intrinsic Mode Functions 9 ')
+grid on
+h = gcf; 
+set(h,'Name','Intrinsic Mode Functions    9');
+%% 
+figure,plot(INT_MOD_FUN{10},'m')
+xlabel('Tim')
+ylabel('Amplitude')
+title('Intrinsic Mode Functions 10')
+grid on
+h = gcf; 
+set(h,'Name','Intrinsic Mode Functions    10');
+%% 
+figure,plot(INT_MOD_FUN{11},'r')
+xlabel('Tim')
+ylabel('Amplitude')
+title('Intrinsic Mode Functions 11')
+grid on
+h = gcf; 
+set(h,'Name','Intrinsic Mode Functions    11');
+%% 
+%% P=INT_MOD_FUN{1}
+PCM=[1 0 1 0 ];
+q = quantizer([4,3]);
+DATA=INT_MOD_FUN{1};
+L=length(DATA)
+CONS=num2bin(q,DATA)
+CONS(L+1:L+4)
+DA=bin2num(q,CONS)
+ORIGINAL=YY;
+EMBED_AUDIO=YY;
+EMBED_AUDIO(1:10000)=DA
+%% TO PLOT ORIGINAL AUDI SIGNALS  AND AUDIO WATERMARK DATA
+Y=EMBED_AUDIO;
+X=ORIGINAL;
+% FEATURES CALCULATION 
+%% PSNR RANGE FOR ORIGINAL AND WATERMARK DATA
+% Y=Y(1:512);
+% X=X(1:512);
+% filtered_signal=BAND_PASS_FILTER(input)
+% PSNR_RANG= PSNR(X,Y)
+SNR = SNR_RANGE(Y, X)
+figure,plot(EMBED_AUDIO,'g');
+title('WATER MARKED DATA');
+figure,plot(ORIGINAL,'k');
+title('ORIGINAL AUDIO DATA');
+%% WATERMARK DATA EXTRACTION PROCESS
+ADI_COS=EMBED_AUDIO(1:10000);   
+INC_MOD_FUN= HIL_SPECTR_ANALY_EMD(ADI_COS)
+ LN=length(INC_MOD_FUN);
+ 
+ for i=1:LN
+RECONS_WATER_MARKED{i}=INC_MOD_FUN{i}
+RCON_WTR_MRKD=cell2mat(RECONS_WATER_MARKED)
+ end
+ %% COMPARE WITH ORIGINAL DATA
+ % FIND WATER MARK POSITION 
+ ORGNL=X;
+ RCON_WTR_MRKD(1:length(ADI_COS))=[]
+ X(1:length( RCON_WTR_MRKD))=[]  ;
+ % TO PLAY RECONSTRUCTED DATA
+ soundsc(X,Fs)
+    
+    
+    
+    %%  PSD is the distribution of power per unit frequency
+    % vector of normalized frequencies 
+ AD=X;
+SMPL_AD=AD(1:512);
+RND_GEN= randn(size( SMPL_AD));
+SMP= cos(2*pi* SMPL_AD*200);
+ADI_COS=SMP+  RND_GEN;
+PSD_DATA=spectrum.periodogram;
+figure,psd(PSD_DATA,ADI_COS,'Fs',Fs)
+    
+    %% 
+    EMD=INT_MOD_FUN{11};
+  
+SMPL_AD=   EMD(1:512);
+RND_GEN= randn(size( SMPL_AD));
+SMP= cos(2*pi* SMPL_AD*200);
+ADI_COS=SMP+  RND_GEN;
+PSD_DATA=spectrum.periodogram;
+figure,psd(PSD_DATA,ADI_COS,'Fs',Fs)
+    
+%%   
