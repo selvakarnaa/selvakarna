@@ -1,0 +1,36 @@
+
+clc
+clear all
+close all
+%% Authore 
+input_image=dicomread('sk.dcm');
+figure, imshow(input_image,[]),
+img_adjust = imadjust(input_image);
+filt_img = medfilt2(img_adjust);
+ima=filt_img;
+strl_ele = strel('square', 20);
+bw_imopn = imopen(ima, strl_ele);
+ 
+im_erod = imerode(ima, strl_ele);
+Iobr = imreconstruct(im_erod, ima);
+ 
+Ioc = imclose(bw_imopn, strl_ele);
+im_dila = imdilate(Iobr, strl_ele);
+im_recon = imreconstruct(imcomplement(im_dila), imcomplement(Iobr));
+im_recon = imcomplement(im_recon);
+figure,imshow(im_recon,[])
+im_mx = imregionalmax((im_recon),8);
+l_val = 550;
+h_val = 920;
+fr_gnd = xor(bwareaopen(im_mx,l_val),bwareaopen(im_mx,h_val));
+figure,imshow(imcomplement(fr_gnd))
+% figure,imshow(fr_gnd)
+ Con_Com = bwconncomp(fr_gnd);
+ N_obj=Con_Com.NumObjects;
+ cnt=1;
+ for i=1:N_obj
+ reg_stats=regionprops(fr_gnd,'Area','BoundingBox');
+ crop_img_ele=imcrop(im_mx,reg_stats(i).BoundingBox);
+ figure,imshow(crop_img_ele,[]),title(cnt);
+ cnt=cnt+1;
+ end
